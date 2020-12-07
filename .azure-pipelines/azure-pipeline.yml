@@ -1,0 +1,65 @@
+parameters:
+- name: location
+  displayName: Azure Location
+  type: string
+  default: westeurope
+  values:
+  - westeurope
+- name: environment
+  displayName: Environment
+  type: string
+  default: stage
+  values:
+  - dev
+  #- stage #add new stages here as you wish
+  #- prod
+- name: InfraDestroy
+  displayName: Destroy Infrastructure?
+  type: boolean
+  default: false
+
+trigger:
+  branches:
+    include:
+    - master
+    - hotfix/*
+    - feature/*
+  paths:
+    include:
+    - .azure-pipelines
+    - terraform
+    exclude:
+    - README.md
+
+resources:
+  repositories:
+  - repository: sharedTemplates
+    type: github
+    name: f2calv/CasCap.YAMLTemplates
+    endpoint: github.com_f2calv
+
+jobs:
+- deployment: Deploy
+  environment: ${{ parameters.environment }}
+  pool:
+    vmImage: ubuntu-latest
+  workspace:
+    clean: all
+  strategy:
+    runOnce:
+      deploy:
+        steps:
+        - checkout: self
+          fetchDepth: 1
+
+        - template: templates/jobs.terraform.publish-v1.yml@sharedTemplates
+          parameters:
+            azureSubscription: <TODO ???> #todo: add your azdo service connection name here
+            environment: $(Environment.Name)
+            location: ${{ parameters.location }}
+            backendAzureRmResourceGroupName: terraformrg
+            backendAzureRmStorageAccountName: <TODO ???> #todo: enter a unique storage account name
+            backendAzureRmContainerName: tfstate-$(Environment.Name)
+            backendAzureRmKey: terraform.tfstate
+            workingDirectory: $(Build.SourcesDirectory)/$(Environment.Name)
+            destroy: ${{ parameters.InfraDestroy }}
