@@ -1,5 +1,9 @@
 # Azure DevOps YAML Pipeline to Deploy Azure Infrastructure w/Terraform
 
+> [!IMPORTANT]
+> This repository has been retired and is no longer maintained. It is retained for historical
+> reference and should not be treated as supported or secure production guidance.
+
 This is a YAML pipeline to deploy AKS+ACR to Azure via a YAML pipeline.
 Permissions are also then applied via Terraform to allow AKS to pull images from the ACR.
 
